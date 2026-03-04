@@ -2,14 +2,13 @@ import { Evento } from './Evento.js';
 
 export class Clase extends Evento {
   constructor(datos) {
-    super(datos);   // Llama al padre para inicializar los campos comunes a todos los eventos
-    this.tipo         = 'clase'; // identificador de tipo, siempre fijo
+    super(datos);   
+    this.tipo         = 'clase'; 
     this.instructores = datos.instructores ?? []; 
     this.estilo       = datos.estilo ?? '';
     this.nivel        = datos.nivel ?? 'Libre';
   }
 
-  // Sobreescribimos la función toJSON para incluir también los campos propios de Clase
   toJSON() {
     return {
       ...super.toJSON(),

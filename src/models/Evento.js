@@ -1,12 +1,10 @@
 // Clase base: lo que tienen en común TODOS los eventos
 export class Evento {
   constructor({ id, titulo, dia, horaInicio, horaFin, ubicacion }) {
-    // Si ya viene con id (al cargar de localStorage) lo usa,
-    // si no, genera uno único automáticamente
     this.id         = id ?? crypto.randomUUID();
     this.titulo     = titulo;
     this.dia        = dia;        
-    this.horaInicio = horaInicio;       // Estará en formato decimal: 20.5 = 20:30
+    this.horaInicio = horaInicio;       
     this.horaFin    = horaFin;
     this.ubicacion  = ubicacion;
     this.creadoEn   = new Date().toISOString();
@@ -16,7 +14,6 @@ export class Evento {
     return (this.horaFin - this.horaInicio) * 60;
   }
 
-  // Convierte número decimal a "HH:MM" legible
   get horaInicioTexto() {
     return decimalAHora(this.horaInicio);
   }
