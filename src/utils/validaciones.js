@@ -1,16 +1,10 @@
-// esto es posiblemente lo que más odio, pero me va a facilitar la vida 
 import { SALAS, UBICACIONES_EXTERNAS } from './constantes.js';
+import { DIAS, FESTIVAL } from './constantes.js';
 
-
-// No sabía como hacerlo pero esta función comprueba si dos franjas horarias se superponen
-// Ejemplo: [20:00-21:30] y [21:00-22:00] SÍ se superponen
-// Ejemplo: [20:00-21:00] y [21:00-22:00] NO se superponen 
 function seSuperponen(aInicio, aFin, bInicio, bFin) {
   return aInicio < bFin && aFin > bInicio;
 }
 
-// Devuelve qué salas están ocupadas en un día y franja horaria concretos
-// excludeId es el id del evento que estamos editando, esta para no bloquearse a sí mismo, que ya me ha pasado varias veces al probarlo
 export function salasOcupadas(eventos, dia, horaInicio, horaFin, excludeId = null) {
   return eventos
     .filter(evento =>
@@ -22,14 +16,12 @@ export function salasOcupadas(eventos, dia, horaInicio, horaFin, excludeId = nul
     .map(evento => evento.ubicacion);
 }
 
-// Devuelve las salas que están libres
 export function salasLibres(eventos, dia, horaInicio, horaFin, excludeId = null) {
   const ocupadas = salasOcupadas(eventos, dia, horaInicio, horaFin, excludeId);
   return SALAS.filter(sala => !ocupadas.includes(sala));
 }
 
 export function ubicacionesDisponibles(eventos, dia, horaInicio, horaFin, excludeId = null) {
-  // Salas que tienen una CLASE en ese horario
   const salasConClase = eventos
     .filter(evento =>
       evento.tipo      === 'clase'   &&
@@ -62,6 +54,30 @@ export function validarUbicacion(eventos, evento) {
         mensaje: `${ubicacion} tiene una clase en ese horario y no puede usarse.`
       };
     }
+  }
+
+  return { valido: true };
+}
+
+export function validarRangoFestival(dia, horaInicio, horaFin) {
+  const indiceDia    = DIAS.indexOf(dia);
+  const indiceInicio = DIAS.indexOf(FESTIVAL.inicio.dia); // 0 (Viernes)
+  const indiceFin    = DIAS.indexOf(FESTIVAL.fin.dia);    // 2 (Domingo)
+
+  if (indiceDia < indiceInicio || indiceDia > indiceFin) {
+    return { valido: false, mensaje: 'El día está fuera del festival (Viernes–Domingo).' };
+  }
+
+  if (indiceDia === indiceInicio && horaInicio < FESTIVAL.inicio.hora) {
+    return { valido: false, mensaje: 'El festival empieza el Viernes a las 20:00.' };
+  }
+
+  if (indiceDia === indiceFin && horaFin > FESTIVAL.fin.hora) {
+    return { valido: false, mensaje: 'El festival termina el Domingo a las 20:00.' };
+  }
+
+  if (horaInicio >= horaFin) {
+    return { valido: false, mensaje: 'La hora de inicio debe ser anterior a la de fin.' };
   }
 
   return { valido: true };
