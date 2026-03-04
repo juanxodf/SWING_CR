@@ -3,8 +3,8 @@ import { Evento } from './Evento.js';
 export class Actividad extends Evento {
   constructor(datos) {
     super(datos);
-    this.tipo          = 'actividad';   // más general
-    this.tipoActividad = datos.tipoActividad ?? 'Social';   // más específico
+    this.tipo          = 'actividad';   
+    this.tipoActividad = datos.tipoActividad ?? 'Social';   
     this.banda         = datos.banda ?? '';        
     this.profesores    = datos.profesores ?? [];   
     this.estilo        = datos.estilo ?? '';

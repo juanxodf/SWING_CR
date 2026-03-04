@@ -1,1 +1,1 @@
-
+// realmente esto será un componente que pintará el modal y se encargará de mostrarlo o no, dependiendo de si hay un evento seleccionado o no.

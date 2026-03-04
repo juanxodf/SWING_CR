@@ -1,0 +1,1 @@
+// esto será un componente que pintará el formulario para crear o editar eventos. Deberá ser capaz de manejar tanto actividades como clases, y deberá validar los datos introducidos por el usuario antes de enviarlos al almacenamiento.

@@ -15,19 +15,16 @@ export class ControlAlmacenamiento {
         }
     }
 
-    // Convierte los objetos a JSON y los guarda
     guardar(eventos) {
         const datos = eventos.map(e => e.toJSON());
         localStorage.setItem(CLAVE, JSON.stringify(datos));
     }
 
-    // Borra todo
     limpiar() {
         localStorage.removeItem(CLAVE);
     }
 }
 
-// Decide qué clase instanciar según el campo 'tipo'
 function desdeJSON(datos) {
     if (datos.tipo === 'clase') {
         return new Clase(datos);

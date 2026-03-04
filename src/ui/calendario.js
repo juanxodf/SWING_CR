@@ -1,0 +1,1 @@
+// este componente pintará el calendario con los eventos. Deberá ser capaz de mostrar tanto actividades como clases, y deberá permitir al usuario hacer clic en un evento para ver sus detalles en un modal. También deberá permitir al usuario crear nuevos eventos haciendo clic en un día del calendario.
