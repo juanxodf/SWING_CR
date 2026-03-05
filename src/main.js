@@ -1,31 +1,40 @@
 import './style.css';
-import { App }              from './app.js';
+import { App } from './app.js';
 import { renderFormulario } from './ui/formulario.js';
 import { renderCalendario, activarDragDrop } from './ui/calendario.js';
-import { DIAS }             from './utils/constantes.js';
-import { decimalAHora }     from './models/Evento.js';
-import { mostrarModal }     from './ui/modal.js';
+import { DIAS } from './utils/constantes.js';
+import { decimalAHora } from './models/Evento.js';
+import { mostrarModal } from './ui/modal.js';
 
 const app = new App();
 let diaActivo = 'Viernes';
 
 document.querySelector('#app').innerHTML = `
-  <h1>Swing CR Planner</h1>
-  <p>VIII Festival · Ciudad Real 2026</p>
-  <hr>
-  <button id="btn-nueva-entrada">+ Nueva entrada</button>
-  <hr>
-  <div>
-    ${DIAS.map(dia => `<button class="dia-btn" data-dia="${dia}">${dia}</button>`).join('')}
+  <div class="header">
+    <div class="header-marca">
+      <h1>♪ Swing CR Planner</h1>
+      <p>VIII Festival · Ciudad Real 2026</p>
+    </div>
+    <button class="btn-primario" id="btn-nueva-entrada">+ Nueva entrada</button>
   </div>
-  <div id="contenedor-lista"></div>
+
+  <nav class="dias-nav">
+    ${DIAS.map((dia, i) => `
+      <button class="dia-btn ${i === 0 ? 'activo' : ''}" data-dia="${dia}">${dia}</button>
+    `).join('')}
+  </nav>
+
+  <div class="contenido">
+    <aside id="contenedor-lista" class="panel-lateral"></aside>
+    <div id="contenedor-calendario" class="calendario-contenedor"></div>
+  </div>
+
   <div id="contenedor-formulario"></div>
-  <div id="contenedor-calendario"></div>
 `;
 
-const formContenedor  = document.querySelector('#contenedor-formulario');
+const formContenedor = document.querySelector('#contenedor-formulario');
 const listaContenedor = document.querySelector('#contenedor-lista');
-const calContenedor   = document.querySelector('#contenedor-calendario');
+const calContenedor = document.querySelector('#contenedor-calendario');
 
 function pintarLista() {
   const eventosDia = app.eventos
@@ -33,24 +42,33 @@ function pintarLista() {
     .sort((a, b) => a.horaInicio - b.horaInicio);
 
   if (eventosDia.length === 0) {
-    listaContenedor.innerHTML = `<p>No hay eventos el ${diaActivo}.</p>`;
+    listaContenedor.innerHTML = `
+      <h2>Eventos del ${diaActivo}</h2>
+      <div class="panel-vacio">
+        <span>♪</span>
+        <p>Sin eventos</p>
+      </div>
+    `;
     return;
   }
 
   listaContenedor.innerHTML = `
     <h2>Eventos del ${diaActivo}</h2>
-    <ul>
-      ${eventosDia.map(e => `
-        <li>
-          <strong>${e.titulo}</strong>
-          — ${decimalAHora(e.horaInicio)} a ${decimalAHora(e.horaFin)}
-          — ${e.ubicacion}
-          — ${e.tipo === 'clase' ? 'Clase · ' + e.nivel : e.tipoActividad}
-          <button class="btn-editar"   data-id="${e.id}">Editar</button>
-          <button class="btn-eliminar" data-id="${e.id}">Eliminar</button>
-        </li>
-      `).join('')}
-    </ul>
+    ${eventosDia.map(e => {
+    const tipo = e.tipo === 'clase' ? 'clase' : e.tipoActividad?.toLowerCase();
+    return `
+        <div class="evento-item tipo-${tipo}">
+          <div class="evento-item-titulo">${e.titulo}</div>
+          <div class="evento-item-info">
+            ${decimalAHora(e.horaInicio)}–${decimalAHora(e.horaFin)} · ${e.ubicacion}
+          </div>
+          <div class="evento-item-acciones">
+            <button class="btn-secundario btn-editar"  data-id="${e.id}">Editar</button>
+            <button class="btn-peligro   btn-eliminar" data-id="${e.id}">Eliminar</button>
+          </div>
+        </div>
+      `;
+  })}
   `;
 
   listaContenedor.querySelectorAll('.btn-eliminar').forEach(btn => {
@@ -72,17 +90,16 @@ function pintarLista() {
 
 function pintarCalendario() {
   renderCalendario(calContenedor, app.eventos, diaActivo, (evento) => {
-    mostrarModal(evento,(ev) => abrirFormulario(ev),(id) => {
-        app.eliminarEvento(id);
-        pintarTodo();
-      }
-    );
+    mostrarModal(evento, (ev) => abrirFormulario(ev), (id) => {
+      app.eliminarEvento(id);
+      pintarTodo();
+    });
   });
 
   activarDragDrop(calContenedor, (id, nuevoDia, nuevaInicio) => {
     const evento = app.eventos.find(e => e.id === id);
     if (!evento) return { ok: false, error: 'Evento no encontrado.' };
-    const duracion  = evento.horaFin - evento.horaInicio;
+    const duracion = evento.horaFin - evento.horaInicio;
     const resultado = app.moverEvento(id, nuevoDia, nuevaInicio, nuevaInicio + duracion);
     if (resultado.ok) pintarTodo();
     return resultado;
@@ -90,15 +107,24 @@ function pintarCalendario() {
 }
 
 function abrirFormulario(eventoEditar = null) {
-  renderFormulario(formContenedor, app.eventos, (datos, tipo) => {
+  const overlay = document.createElement('div');
+  overlay.className = 'formulario-overlay';
+  overlay.id = 'formulario-overlay';
+  document.body.appendChild(overlay);
+
+  renderFormulario(overlay, app.eventos, (datos, tipo) => {
     const resultado = app.guardarEvento(datos, tipo);
     if (resultado.ok) {
-      formContenedor.innerHTML = '';
+      overlay.remove();
       pintarTodo();
     } else {
       alert(`Error: ${resultado.error}`);
     }
   }, eventoEditar);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
 }
 
 document.querySelector('#btn-nueva-entrada').addEventListener('click', () => {
@@ -107,6 +133,8 @@ document.querySelector('#btn-nueva-entrada').addEventListener('click', () => {
 
 document.querySelectorAll('.dia-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    document.querySelectorAll('.dia-btn').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
     diaActivo = btn.dataset.dia;
     pintarTodo();
   });
