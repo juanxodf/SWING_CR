@@ -4,8 +4,8 @@ import { renderFormulario } from './ui/formulario.js';
 import { renderCalendario } from './ui/calendario.js';
 import { DIAS }             from './utils/constantes.js';
 import { decimalAHora }     from './models/Evento.js';
+import { mostrarModal }     from './ui/modal.js';
 
-// ── Arranque ──────────────────────────────────────────────────────────────────
 const app = new App();
 let diaActivo = 'Viernes';
 
@@ -27,7 +27,6 @@ const formContenedor  = document.querySelector('#contenedor-formulario');
 const listaContenedor = document.querySelector('#contenedor-lista');
 const calContenedor   = document.querySelector('#contenedor-calendario');
 
-// ── Lista de eventos ──────────────────────────────────────────────────────────
 function pintarLista() {
   const eventosDia = app.eventos
     .filter(e => e.dia === diaActivo)
@@ -73,7 +72,11 @@ function pintarLista() {
 
 function pintarCalendario() {
   renderCalendario(calContenedor, app.eventos, diaActivo, (evento) => {
-    console.log('Evento clicado:', evento);
+    mostrarModal(evento,(ev) => abrirFormulario(ev),(id) => {
+        app.eliminarEvento(id);
+        pintarTodo();
+      }
+    );
   });
 }
 
