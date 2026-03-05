@@ -5,7 +5,7 @@ export class ControlAlmacenamiento {
 
     cargar() {
         try {
-            const texto = localStorage.getItem(CLAVE);
+            const texto = localStorage.getItem('CLAVE_EVENTOS');
             if (!texto) return []; 
             const datos = JSON.parse(texto);
             return datos.map(item => desdeJSON(item));
@@ -17,11 +17,11 @@ export class ControlAlmacenamiento {
 
     guardar(eventos) {
         const datos = eventos.map(e => e.toJSON());
-        localStorage.setItem(CLAVE, JSON.stringify(datos));
+        localStorage.setItem('CLAVE_EVENTOS', JSON.stringify(datos));
     }
 
     limpiar() {
-        localStorage.removeItem(CLAVE);
+        localStorage.removeItem('CLAVE_EVENTOS');
     }
 }
 
