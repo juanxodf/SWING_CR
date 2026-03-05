@@ -120,3 +120,47 @@ function colorEvento(evento) {
   if (evento.tipo === 'clase') return TIPO_COLORES['clase'];
   return TIPO_COLORES[evento.tipoActividad?.toLowerCase()] ?? '#888';
 }
+
+export function activarDragDrop(contenedor, onMover) {
+  contenedor.querySelectorAll('td[data-sala]').forEach(celda => {
+    if (!celda.querySelector('strong')) return; 
+
+    celda.setAttribute('draggable', true);
+
+    celda.addEventListener('dragstart', e => {
+      const titulo = celda.querySelector('strong').textContent;
+      e.dataTransfer.setData('text/plain', celda.dataset.id ?? titulo);
+      celda.style.opacity = '0.4';
+    });
+
+    celda.addEventListener('dragend', () => {
+      celda.style.opacity = '1';
+    });
+  });
+
+  contenedor.querySelectorAll('td[data-sala]').forEach(celda => {
+    celda.addEventListener('dragover', e => {
+      e.preventDefault();
+      celda.style.background = '#ffffaa';
+    });
+
+    celda.addEventListener('dragleave', () => {
+      celda.style.background = '';
+    });
+
+    celda.addEventListener('drop', e => {
+      e.preventDefault();
+      celda.style.background = '';
+
+      const id          = e.dataTransfer.getData('text/plain');
+      const nuevoDia    = celda.dataset.dia;
+      const nuevaInicio = parseFloat(celda.dataset.hora);
+
+      const resultado = onMover(id, nuevoDia, nuevaInicio);
+
+      if (!resultado.ok) {
+        alert('No se puede mover ahí: ' + resultado.error);
+      }
+    });
+  });
+}

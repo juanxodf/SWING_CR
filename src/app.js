@@ -1,6 +1,6 @@
 import { ControlAlmacenamiento } from './storage/ControlAlmacenamiento.js';
-import { Clase }                 from './models/Clase.js';
-import { Actividad }             from './models/Actividad.js';
+import { Clase } from './models/Clase.js';
+import { Actividad } from './models/Actividad.js';
 import { validarRangoFestival, validarUbicacion } from './utils/validaciones.js';
 
 export class App {
@@ -14,24 +14,19 @@ export class App {
   }
 
   guardarEvento(datos, tipo) {
-    // Validamos rango del festival
     const rangoOk = validarRangoFestival(datos.dia, datos.horaInicio, datos.horaFin);
     if (!rangoOk.valido) return { ok: false, error: rangoOk.mensaje };
 
-    // Crear clase o actividad (depende del boton que se pulse)
     const instancia = tipo === 'clase' ? new Clase(datos) : new Actividad(datos);
 
-    // Mostramos la ubicación que está libre ( si está ocupada no se muestra ese sitio )
     const ubicacionOk = validarUbicacion(this.eventos, instancia);
     if (!ubicacionOk.valido) return { ok: false, error: ubicacionOk.mensaje };
 
-    // Si es edición, eliminar el evento anterior
     if (datos.id) {
       this.eventos = this.eventos.filter(e => e.id !== datos.id);
       instancia.id = datos.id;
     }
 
-    // Añadir y guardar
     this.eventos.push(instancia);
     this.storage.guardar(this.eventos);
 
@@ -41,6 +36,34 @@ export class App {
   eliminarEvento(id) {
     this.eventos = this.eventos.filter(e => e.id !== id);
     this.storage.guardar(this.eventos);
+  }
+
+  moverEvento(id, nuevoDia, nuevaHoraInicio, nuevaHoraFin) {
+    const evento = this.eventos.find(e => e.id === id);
+    if (!evento) return { ok: false, error: 'Evento no encontrado.' };
+
+    const original = {
+      dia: evento.dia,
+      horaInicio: evento.horaInicio,
+      horaFin: evento.horaFin
+    };
+
+    evento.dia = nuevoDia;
+    evento.horaInicio = nuevaHoraInicio;
+    evento.horaFin = nuevaHoraFin;
+
+    const rangoOk = validarRangoFestival(nuevoDia, nuevaHoraInicio, nuevaHoraFin);
+    const ubicacionOk = validarUbicacion(this.eventos, evento);
+
+    if (!rangoOk.valido || !ubicacionOk.valido) {
+      evento.dia = original.dia;
+      evento.horaInicio = original.horaInicio;
+      evento.horaFin = original.horaFin;
+      return { ok: false, error: rangoOk.mensaje ?? ubicacionOk.mensaje };
+    }
+
+    this.storage.guardar(this.eventos);
+    return { ok: true };
   }
 
 }

@@ -1,7 +1,7 @@
 import './style.css';
 import { App }              from './app.js';
 import { renderFormulario } from './ui/formulario.js';
-import { renderCalendario } from './ui/calendario.js';
+import { renderCalendario, activarDragDrop } from './ui/calendario.js';
 import { DIAS }             from './utils/constantes.js';
 import { decimalAHora }     from './models/Evento.js';
 import { mostrarModal }     from './ui/modal.js';
@@ -77,6 +77,15 @@ function pintarCalendario() {
         pintarTodo();
       }
     );
+  });
+
+  activarDragDrop(calContenedor, (id, nuevoDia, nuevaInicio) => {
+    const evento = app.eventos.find(e => e.id === id);
+    if (!evento) return { ok: false, error: 'Evento no encontrado.' };
+    const duracion  = evento.horaFin - evento.horaInicio;
+    const resultado = app.moverEvento(id, nuevoDia, nuevaInicio, nuevaInicio + duracion);
+    if (resultado.ok) pintarTodo();
+    return resultado;
   });
 }
 
