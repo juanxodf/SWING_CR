@@ -1,3 +1,6 @@
+import { Clase }     from '../models/Clase.js';
+import { Actividad } from '../models/Actividad.js';
+
 export class ControlAlmacenamiento {
     constructor() {
         console.log('ControlAlmacenamiento inicializado');
