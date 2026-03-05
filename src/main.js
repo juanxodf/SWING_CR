@@ -1,9 +1,11 @@
 import './style.css';
 import { App }              from './app.js';
 import { renderFormulario } from './ui/formulario.js';
+import { renderCalendario } from './ui/calendario.js';
 import { DIAS }             from './utils/constantes.js';
 import { decimalAHora }     from './models/Evento.js';
 
+// ── Arranque ──────────────────────────────────────────────────────────────────
 const app = new App();
 let diaActivo = 'Viernes';
 
@@ -16,14 +18,16 @@ document.querySelector('#app').innerHTML = `
   <div>
     ${DIAS.map(dia => `<button class="dia-btn" data-dia="${dia}">${dia}</button>`).join('')}
   </div>
-  <hr>
   <div id="contenedor-lista"></div>
   <div id="contenedor-formulario"></div>
+  <div id="contenedor-calendario"></div>
 `;
 
 const formContenedor  = document.querySelector('#contenedor-formulario');
 const listaContenedor = document.querySelector('#contenedor-lista');
+const calContenedor   = document.querySelector('#contenedor-calendario');
 
+// ── Lista de eventos ──────────────────────────────────────────────────────────
 function pintarLista() {
   const eventosDia = app.eventos
     .filter(e => e.dia === diaActivo)
@@ -54,7 +58,7 @@ function pintarLista() {
     btn.addEventListener('click', () => {
       if (confirm('¿Eliminar este evento?')) {
         app.eliminarEvento(btn.dataset.id);
-        pintarLista();
+        pintarTodo();
       }
     });
   });
@@ -67,12 +71,18 @@ function pintarLista() {
   });
 }
 
+function pintarCalendario() {
+  renderCalendario(calContenedor, app.eventos, diaActivo, (evento) => {
+    console.log('Evento clicado:', evento);
+  });
+}
+
 function abrirFormulario(eventoEditar = null) {
   renderFormulario(formContenedor, app.eventos, (datos, tipo) => {
     const resultado = app.guardarEvento(datos, tipo);
     if (resultado.ok) {
       formContenedor.innerHTML = '';
-      pintarLista();
+      pintarTodo();
     } else {
       alert(`Error: ${resultado.error}`);
     }
@@ -86,8 +96,13 @@ document.querySelector('#btn-nueva-entrada').addEventListener('click', () => {
 document.querySelectorAll('.dia-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     diaActivo = btn.dataset.dia;
-    pintarLista();
+    pintarTodo();
   });
 });
 
-pintarLista();
+function pintarTodo() {
+  pintarLista();
+  pintarCalendario();
+}
+
+pintarTodo();
